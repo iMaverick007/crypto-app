@@ -17,7 +17,7 @@ const Header = () => {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-white hover:text-yellow-400"
+            className="md:hidden text-white hover:text-yellow-400 cursor-pointer"
           >
             <svg
               className="h-6 w-6"
@@ -39,23 +39,23 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:block">
             <ul className="flex space-x-6">
-              <li>
-                <Link to="/" className="hover:text-yellow-400 transition cursor-pointer">
+              <li className="cursor-pointer">
+                <Link to="/" className="hover:text-yellow-400 transition">
                   Home
                 </Link>
               </li>
-              <li>
-                <Link to="/news" className="hover:text-yellow-400 transition cursor-pointer">
+              <li className="cursor-pointer">
+                <Link to="/news" className="hover:text-yellow-400 transition">
                   News
                 </Link>
               </li>
-              <li>
-                <Link to="/prediction" className="hover:text-yellow-400 transition cursor-pointer">
+              <li className="cursor-pointer">
+                <Link to="/prediction" className="hover:text-yellow-400 transition">
                   Prediction
                 </Link>
               </li>
-              <li>
-                <Link to="/contact" className="hover:text-yellow-400 transition cursor-pointer">
+              <li className="cursor-pointer">
+                <Link to="/contact" className="hover:text-yellow-400 transition">
                   Contact
                 </Link>
               </li>
@@ -67,37 +67,37 @@ const Header = () => {
         {isMenuOpen && (
           <nav className="md:hidden mt-4">
             <ul className="flex flex-col space-y-4">
-              <li>
+              <li className="cursor-pointer">
                 <Link
                   to="/"
-                  className="block hover:text-yellow-400 transition cursor-pointer"
+                  className="block hover:text-yellow-400 transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
                 </Link>
               </li>
-              <li>
+              <li className="cursor-pointer">
                 <Link
                   to="/news"
-                  className="block hover:text-yellow-400 transition cursor-pointer"
+                  className="block hover:text-yellow-400 transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   News
                 </Link>
               </li>
-              <li>
+              <li className="cursor-pointer">
                 <Link
                   to="/prediction"
-                  className="block hover:text-yellow-400 transition cursor-pointer"
+                  className="block hover:text-yellow-400 transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Prediction
                 </Link>
               </li>
-              <li>
+              <li className="cursor-pointer">
                 <Link
                   to="/contact"
-                  className="block hover:text-yellow-400 transition cursor-pointer"
+                  className="block hover:text-yellow-400 transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contact
