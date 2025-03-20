@@ -107,6 +107,13 @@ const Header = () => {
           </nav>
         )}
       </div>
+      <div className="bg-yellow-500 w-full">
+        <div className="container mx-auto px-4 py-2">
+          <p className="text-center text-sm font-medium text-yellow-900">
+            🚧 This application is currently in development mode and may not be fully functional 🚧
+          </p>
+        </div>
+      </div>
     </header>
   );
 };
