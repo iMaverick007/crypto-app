@@ -18,7 +18,7 @@ const Hero = () => {
     }
   }, [dispatch, status]);
 
-  // Set a default coin for chart
+  // Set a default coin for the chart
   useEffect(() => {
     if (status === "succeeded" && trending.length > 0 && !defaultCoin) {
       const randomCoin = trending[Math.floor(Math.random() * trending.length)];
@@ -40,6 +40,17 @@ const Hero = () => {
         <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
           Explore <span className="text-yellow-400">Crypto Trends</span>
         </h1>
+
+        {/* Loading State for Cards */}
+        {status === "loading" && (
+          <div className="flex justify-center items-center h-full">
+            <div className="text-4xl font-extrabold tracking-wide text-center">
+              <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
+                Loading trending cryptocurrencies...
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Render Cards */}
         {status === "succeeded" && trending.length > 0 && (
@@ -94,7 +105,18 @@ const Hero = () => {
 
         {/* Chart Display */}
         <div className="flex justify-center">
-          {(selectedCoin || defaultCoin) && chartStatus === "loading" && <p>Loading chart...</p>}
+          {/* Loading Animation for Chart */}
+          {(selectedCoin || defaultCoin) && chartStatus === "loading" && (
+            <div className="flex justify-center items-center h-full">
+              <div className="text-4xl font-extrabold tracking-wide text-center">
+                <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
+                  Loading the chart data...
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Render Chart */}
           {(selectedCoin || defaultCoin) && chartStatus === "succeeded" && (
             <CryptoChart coinId={selectedCoin || defaultCoin} />
           )}
