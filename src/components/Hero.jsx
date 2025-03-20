@@ -35,16 +35,16 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen py-16">
+    <section className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen py-8 md:py-16">
       <div className="container mx-auto px-4 flex flex-col justify-center h-full">
-        <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
+        <h1 className="text-2xl md:text-4xl font-extrabold text-center mb-6 tracking-wide">
           Explore <span className="text-yellow-400">Crypto Trends</span>
         </h1>
 
         {/* Loading State for Cards */}
         {status === "loading" && (
           <div className="flex justify-center items-center h-full">
-            <div className="text-4xl font-extrabold tracking-wide text-center">
+            <div className="text-xl md:text-4xl font-extrabold tracking-wide text-center">
               <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
                 Loading trending cryptocurrencies...
               </span>
@@ -54,7 +54,7 @@ const Hero = () => {
 
         {/* Render Cards */}
         {status === "succeeded" && trending.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
             {trending.map((coin) => (
               <div
                 key={coin.item.id}
@@ -103,8 +103,8 @@ const Hero = () => {
           </div>
         )}
 
-        {/* Chart Display */}
-        <div className="flex justify-center">
+        {/* Chart container with responsive padding */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Loading Animation for Chart */}
           {(selectedCoin || defaultCoin) && chartStatus === "loading" && (
             <div className="flex justify-center items-center h-full">

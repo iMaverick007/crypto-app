@@ -18,15 +18,16 @@ const NewsFeed = () => {
   };
 
   return (
-    <section className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen py-16">
-      <div className="container mx-auto px-4 flex flex-col justify-center h-full">
-        <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
+    <section className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen py-8 md:py-16">
+      <div className="container mx-auto px-4">
+        <h1 className="text-2xl md:text-4xl font-extrabold text-center mb-6 tracking-wide">
           Explore <span className="text-yellow-400">Crypto News</span>
         </h1>
 
+        {/* Loading state */}
         {status === "loading" && (
-          <div className="flex justify-center items-center h-full">
-            <div className="text-4xl font-extrabold tracking-wide text-center">
+          <div className="flex justify-center items-center py-8">
+            <div className="text-xl md:text-4xl font-extrabold tracking-wide text-center">
               <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
                 Loading cryptocurrency news...
               </span>
@@ -39,7 +40,7 @@ const NewsFeed = () => {
           </div>
         )}
         {status === "succeeded" && articles.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {articles
               .filter(
                 (article) =>
@@ -48,7 +49,7 @@ const NewsFeed = () => {
               .map((article, index) => (
                 <div
                   key={index}
-                  className="p-6 rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white hover:scale-105 transform transition-all duration-300"
+                  className="flex flex-col h-full p-4 md:p-6 rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white hover:scale-105 transform transition-all duration-300"
                 >
                   {article.image_url && (
                     <img

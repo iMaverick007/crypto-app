@@ -74,10 +74,9 @@ const Prediction = () => {
   };
 
   return (
-    <section className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen py-16">
-      <div className="container mx-auto px-4 flex flex-col justify-center h-full">
-        {/* Title */}
-        <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
+    <section className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen py-8 md:py-16">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <h1 className="text-2xl md:text-4xl font-extrabold text-center mb-6 tracking-wide">
           Predict <span className="text-yellow-400">Crypto Prices</span>
         </h1>
 
@@ -85,12 +84,12 @@ const Prediction = () => {
         <div className="text-center mb-6">
           <button
             onClick={() => setShowInfo(!showInfo)}
-            className="text-sm bg-gray-800 text-yellow-400 px-4 py-2 rounded-lg hover:bg-gray-700"
+            className="text-sm md:text-base bg-gray-800 text-yellow-400 px-4 py-2 rounded-lg hover:bg-gray-700"
           >
             {showInfo ? "Hide Info" : "How It Works"}
           </button>
           {showInfo && (
-            <div className="mt-4 bg-gray-900 p-4 rounded-lg text-sm text-gray-300">
+            <div className="mt-4 bg-gray-900 p-4 rounded-lg text-sm md:text-base text-gray-300">
               <p className="mb-2">
                 1. **Select a cryptocurrency:** Choose a trending coin from the dropdown.
               </p>
@@ -118,7 +117,7 @@ const Prediction = () => {
             <select
               value={selectedCoin}
               onChange={(e) => setSelectedCoin(e.target.value)}
-              className="bg-gray-800 text-white px-4 py-2 rounded-lg text-lg"
+              className="w-full max-w-xs md:max-w-sm bg-gray-800 text-white px-4 py-2 rounded-lg text-base md:text-lg"
             >
               {trending.map((coin) => (
                 <option key={coin.item.id} value={coin.item.id}>
@@ -129,8 +128,8 @@ const Prediction = () => {
           )}
         </div>
 
-        {/* Buttons */}
-        <div className="flex justify-center space-x-4 mb-8">
+        {/* Action Buttons */}
+        <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4 mb-8">
           <button
             onClick={handleFetchAndPredict}
             disabled={status === "loading"}
@@ -177,7 +176,7 @@ const Prediction = () => {
 
         {/* Prediction Results */}
         {prediction !== null && (
-          <div className="mt-10 bg-gradient-to-br from-gray-800 via-gray-900 to-black p-6 rounded-lg shadow-lg text-center">
+          <div className="mt-6 md:mt-10 bg-gradient-to-br from-gray-800 via-gray-900 to-black p-4 md:p-6 rounded-lg shadow-lg text-center">
             <p className="text-xl font-bold text-yellow-300 mb-2">
               Prediction for: {trending.find((coin) => coin.item.id === selectedCoin)?.item.name || "Selected Coin"}
             </p>

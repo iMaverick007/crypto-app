@@ -16,32 +16,32 @@ const CryptoChart = memo(({ coinId }) => {
 
   return (
     <div
-      className="rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black p-4"
-      style={{ width: "100%", maxWidth: "800px", height: "400px" }}
+      className="rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black p-2 md:p-4 w-full"
+      style={{ height: "300px", minHeight: "300px", maxHeight: "400px" }}
     >
       <ResponsiveContainer>
-        <LineChart data={chartData}>
+        <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           {/* Gridlines */}
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.2)" />
           
           {/* Axes */}
           <XAxis
             dataKey="date"
-            tick={{ fill: "#FACC15" }}
+            tick={{ fill: "#FACC15", fontSize: "0.75rem" }}
             label={{
-              value: "Time Period (Date)",
+              value: "Date",
               position: "bottom",
-              offset: 10,
-              style: { fill: "#FACC15", fontSize: 14 },
+              offset: 0,
+              style: { fill: "#FACC15", fontSize: "0.75rem" },
             }}
           />
           <YAxis
-            tick={{ fill: "#FACC15" }}
+            tick={{ fill: "#FACC15", fontSize: "0.75rem" }}
             label={{
-              value: "Price (USD)",
+              value: "USD",
               angle: -90,
               position: "insideLeft",
-              style: { fill: "#FACC15", fontSize: 14 },
+              style: { fill: "#FACC15", fontSize: "0.75rem" },
             }}
           />
           
