@@ -7,10 +7,9 @@ const NewsFeed = () => {
   const { articles, status, error } = useSelector((state) => state.news);
 
   useEffect(() => {
-    dispatch(fetchNews());
+    dispatch(fetchNews()); // Fetch news with a fixed query
   }, [dispatch]);
 
-  // Function to trim the description and add ellipsis
   const trimDescription = (description, maxLength = 100) => {
     if (description.length > maxLength) {
       return `${description.substring(0, maxLength)}...`;
@@ -21,15 +20,15 @@ const NewsFeed = () => {
   return (
     <section className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen py-16">
       <div className="container mx-auto px-4 flex flex-col justify-center h-full">
-      <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
-          Explore <span className="text-yellow-400">Latest News</span>
+        <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
+          Explore <span className="text-yellow-400">Crypto News</span>
         </h1>
 
         {status === "loading" && (
           <div className="flex justify-center items-center h-full">
             <div className="text-4xl font-extrabold tracking-wide text-center">
               <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
-                Loading the latest news articles...
+                Loading cryptocurrency news...
               </span>
             </div>
           </div>
@@ -44,17 +43,16 @@ const NewsFeed = () => {
             {articles
               .filter(
                 (article) =>
-                  article.urlToImage && article.description && article.title
-              ) // Filter out incomplete articles
+                  article.image_url && article.description && article.title
+              )
               .map((article, index) => (
                 <div
                   key={index}
                   className="p-6 rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white hover:scale-105 transform transition-all duration-300"
                 >
-                  {/* Card Content */}
-                  {article.urlToImage && (
+                  {article.image_url && (
                     <img
-                      src={article.urlToImage}
+                      src={article.image_url}
                       alt={article.title}
                       className="w-full h-40 object-cover rounded-lg mb-4 border-2 border-yellow-400"
                     />
@@ -62,14 +60,14 @@ const NewsFeed = () => {
                   <div>
                     <h3 className="text-xl font-bold mb-2">{article.title}</h3>
                     <p className="text-sm text-yellow-400 mb-4">
-                      {new Date(article.publishedAt).toLocaleDateString()}
+                      {new Date(article.pubDate).toLocaleDateString()}
                     </p>
                   </div>
                   <p className="text-sm text-gray-400 mb-4">
                     {trimDescription(article.description, 120)}
                   </p>
                   <a
-                    href={article.url}
+                    href={article.link}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-yellow-400 font-semibold hover:text-yellow-300 transition"

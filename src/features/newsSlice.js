@@ -1,19 +1,21 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// Fetch news articles
+// Fetch news articles with a fixed query for "crypto"
 export const fetchNews = createAsyncThunk(
   "news/fetchNews",
-  async (category = "cryptocurrency") => {
-    console.log("API Key:", import.meta.env.VITE_NEWS_API_KEY); // Debugging line
-    const response = await fetch(
-      `https://newsapi.org/v2/everything?q=${category}&apiKey=${import.meta.env.VITE_NEWS_API_KEY}`
-    );
-    console.log("Response Status:", response.status); // Debugging line
-    if (!response.ok) {
-      throw new Error(`Failed to fetch news: ${response.status} ${response.statusText}`);
+  async () => {
+    try {
+      const response = await fetch(
+        `https://newsdata.io/api/1/latest?apikey=${import.meta.env.VITE_NEWS_API_KEY}&q=crypto&removeduplicate=1`
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch news: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.results; // Return results from the API
+    } catch (error) {
+      throw new Error(`Error: ${error.message}`);
     }
-    const data = await response.json();
-    return data.articles;
   }
 );
 
