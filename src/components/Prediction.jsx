@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTrendingCryptos } from "../features/cryptoSlice";
 import { fetchHistoricalData } from "../features/predictionSlice";
@@ -7,71 +7,100 @@ import { trainModel, predictNextPrice } from "../utils/model";
 const Prediction = () => {
   const dispatch = useDispatch();
   const { trending, status: cryptoStatus } = useSelector((state) => state.crypto);
-  const { historicalData, status, error } = useSelector((state) => state.prediction);
+  const { historicalData, status: predictionStatus } = useSelector((state) => state.prediction);
   const modelRef = useRef(null);
   const [selectedCoin, setSelectedCoin] = useState("");
   const [prediction, setPrediction] = useState(null);
-  const [isPredicting, setIsPredicting] = useState(false);
-  const [isModelTrained, setIsModelTrained] = useState(false);
-  const [isTraining, setIsTraining] = useState(false);
-  const [predictionTimestamp, setPredictionTimestamp] = useState("");
-  const [showInfo, setShowInfo] = useState(false);
+  const [buttonStatus, setButtonStatus] = useState("idle"); // "idle", "fetching", "training", "predicting", "ready"
 
-  // Ensure trending coins are fetched on component mount
+  // Reset states on component mount or route change
   useEffect(() => {
-    if (trending.length === 0 && cryptoStatus === "idle") {
+    resetStates();
+  }, []);
+
+  // New: Reset model and prediction when selectedCoin changes
+  useEffect(() => {
+    modelRef.current = null;
+    setPrediction(null);
+  }, [selectedCoin]);
+
+  // Fetch trending coins when component mounts
+  useEffect(() => {
+    if (cryptoStatus === "idle") {
       dispatch(fetchTrendingCryptos());
     }
-  }, [dispatch, trending, cryptoStatus]);
+  }, [dispatch, cryptoStatus]);
 
-  // Set default coin after fetching trending coins
-  useEffect(() => {
-    if (trending.length > 0) {
-      setSelectedCoin(trending[0]?.item?.id || "");
-    }
-  }, [trending]);
-
-  // Fetch historical data for the selected coin
-  const handleFetchAndPredict = async () => {
-    dispatch(fetchHistoricalData(selectedCoin));
+  // Reset relevant states
+  const resetStates = () => {
+    setPrediction(null);
+    modelRef.current = null; // Clear old model reference
+    setButtonStatus("idle");
   };
 
-  // Train the model after new data is fetched
-  useEffect(() => {
-    const train = async () => {
-      if (status === "succeeded" && historicalData && historicalData.length > 0) {
-        try {
-          setIsTraining(true);
-          const { model, min, max } = await trainModel(historicalData);
-          modelRef.current = { model, min, max };
-          setIsModelTrained(true);
-        } catch (trainingError) {
-          console.error("Error during model training:", trainingError.message);
-        } finally {
-          setIsTraining(false);
-        }
-      }
-    };
-
-    train();
-  }, [status, historicalData]);
-
-  // Make predictions using the trained model
-  const handlePrediction = async () => {
-    if (!isModelTrained || isPredicting || status === "loading" || isTraining) return;
+  // Fetch historical data and train the model with sequential status updates
+  const fetchDataAndTrainModel = async () => {
     try {
-      setIsPredicting(true);
-      const { model, min, max } = modelRef.current;
-      const lastPrice = historicalData[historicalData.length - 1];
-      const nextPrice = await predictNextPrice(model, lastPrice, min, max);
-      setPrediction(nextPrice);
-      setPredictionTimestamp(new Date().toLocaleString());
-    } catch (predictionError) {
-      console.error("Error during prediction:", predictionError.message);
-    } finally {
-      setIsPredicting(false);
+      if (!selectedCoin) {
+        alert("Please select a cryptocurrency!");
+        return;
+      }
+
+      setButtonStatus("fetching"); // indicate fetching started
+
+      // Step 1: Fetch historical data
+      const response = await dispatch(fetchHistoricalData(selectedCoin));
+      const fetchedData = response.payload;
+      if (!fetchedData || fetchedData.length === 0) {
+        throw new Error("Failed to fetch historical data or no data available for training.");
+      }
+
+      setButtonStatus("training"); // indicate training is starting
+
+      // Step 2: Train the model using fetchedData
+      const { model, min, max } = await trainModel(fetchedData);
+      // Store last fetched price along with model data for prediction
+      const lastPrice = fetchedData[fetchedData.length - 1];
+      modelRef.current = { model, min, max, coinId: selectedCoin, lastPrice };
+
+      setButtonStatus("ready"); // training complete, ready to predict
+    } catch (error) {
+      console.error("Error during data fetch or model training:", error.message);
+      alert(error.message);
+      setButtonStatus("idle");
     }
   };
+
+  // Define the handlePrediction function
+  const handlePrediction = async () => {
+    if (!modelRef.current) return;
+    setButtonStatus("predicting"); // indicate prediction started
+    const { model, min, max, lastPrice } = modelRef.current;
+    const predictedPrice = await predictNextPrice(model, lastPrice, min, max);
+    setPrediction(predictedPrice);
+    setButtonStatus("ready"); // prediction done
+  };
+
+  // Combined button handler
+  const handleButtonClick = async () => {
+    if (!selectedCoin) {
+      alert("Please select a cryptocurrency!");
+      return;
+    }
+    if (!modelRef.current || modelRef.current.coinId !== selectedCoin) {
+      await fetchDataAndTrainModel();
+    } else {
+      await handlePrediction();
+    }
+  };
+
+  // Determine button text based on buttonStatus
+  const buttonText = 
+    buttonStatus === "fetching" ? "Fetching Data..." :
+    buttonStatus === "training" ? "Training Model..." :
+    buttonStatus === "predicting" ? "Predicting Price..." :
+    buttonStatus === "ready" ? "Predict Next Price" :
+    "Fetch Data & Train";
 
   return (
     <section className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white min-h-screen py-8 md:py-16">
@@ -80,45 +109,22 @@ const Prediction = () => {
           Predict <span className="text-yellow-400">Crypto Prices</span>
         </h1>
 
-        {/* How It Works Toggle */}
-        <div className="text-center mb-6">
-          <button
-            onClick={() => setShowInfo(!showInfo)}
-            className="text-sm md:text-base bg-gray-800 text-yellow-400 px-4 py-2 rounded-lg hover:bg-gray-700"
-          >
-            {showInfo ? "Hide Info" : "How It Works"}
-          </button>
-          {showInfo && (
-            <div className="mt-4 bg-gray-900 p-4 rounded-lg text-sm md:text-base text-gray-300">
-              <p className="mb-2">
-                1. **Select a cryptocurrency:** Choose a trending coin from the dropdown.
-              </p>
-              <p className="mb-2">
-                2. **Fetch historical data:** Click "Fetch New Data" to gather price history for the selected coin.
-              </p>
-              <p className="mb-2">
-                3. **Train the model:** Wait for the system to analyze the data and prepare its prediction model.
-              </p>
-              <p>
-                4. **Predict the price:** Click "Predict Next Price" to forecast the next value based on historical trends.
-              </p>
-              <p className="mt-2 text-yellow-400">
-                Note: Predictions are based on the last 30 days of historical data. Stable trends may result in similar forecasts.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Coin Selector */}
+        {/* Coin Dropdown */}
         <div className="flex justify-center mb-8">
           {cryptoStatus === "loading" ? (
             <p className="text-yellow-400 font-semibold">Loading trending coins...</p>
           ) : (
             <select
               value={selectedCoin}
-              onChange={(e) => setSelectedCoin(e.target.value)}
-              className="w-full max-w-xs md:max-w-sm bg-gray-800 text-white px-4 py-2 rounded-lg text-base md:text-lg"
+              onChange={(e) => {
+                setSelectedCoin(e.target.value); // Set the selected coin
+                resetStates(); // Clear stale data
+              }}
+              className="bg-gray-800 text-white px-4 py-2 rounded-lg"
             >
+              <option value="" disabled>
+                Select a cryptocurrency
+              </option>
               {trending.map((coin) => (
                 <option key={coin.item.id} value={coin.item.id}>
                   {coin.item.name}
@@ -128,67 +134,31 @@ const Prediction = () => {
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4 mb-8">
+        {/* Single Combined Button */}
+        <div className="flex justify-center mb-6">
           <button
-            onClick={handleFetchAndPredict}
-            disabled={status === "loading"}
-            className={`px-6 py-3 rounded-lg font-semibold text-lg shadow-lg transform transition-all duration-300 ${
-              status === "loading"
+            onClick={handleButtonClick}
+            disabled={buttonStatus === "fetching" || buttonStatus === "training"}
+            className={`px-6 py-3 rounded-lg font-semibold ${
+              buttonStatus === "fetching" || buttonStatus === "training" || !selectedCoin
                 ? "bg-gray-500 cursor-not-allowed"
-                : "bg-green-500 hover:bg-green-400 hover:scale-105"
+                : "bg-blue-500 hover:bg-blue-400"
             }`}
           >
-            {status === "loading" ? "Fetching Data..." : "Fetch New Data"}
+            {buttonText}
           </button>
-          {isModelTrained && (
-            <button
-              onClick={handlePrediction}
-              disabled={status === "loading" || isPredicting || isTraining}
-              className={`px-6 py-3 rounded-lg font-semibold text-lg shadow-lg transform transition-all duration-300 ${
-                status === "loading" || isPredicting || isTraining
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-400 hover:scale-105"
-              }`}
-            >
-              {isTraining
-                ? "Training Model..."
-                : isPredicting
-                ? "Predicting..."
-                : "Predict Next Price"}
-            </button>
-          )}
         </div>
 
-        {/* Status Messages */}
-        <div className="text-center">
-          {isTraining && (
-            <p className="text-yellow-400 font-semibold">
-              Training the model, please wait...
-            </p>
-          )}
-          {status === "failed" && (
-            <p className="text-red-500 font-semibold">
-              Error: {error}
-            </p>
-          )}
-        </div>
-
-        {/* Prediction Results */}
+        {/* Prediction Result */}
         {prediction !== null && (
-          <div className="mt-6 md:mt-10 bg-gradient-to-br from-gray-800 via-gray-900 to-black p-4 md:p-6 rounded-lg shadow-lg text-center">
-            <p className="text-xl font-bold text-yellow-300 mb-2">
-              Prediction for: {trending.find((coin) => coin.item.id === selectedCoin)?.item.name || "Selected Coin"}
+          <div className="mt-6 bg-gray-800 p-4 rounded-lg text-center">
+            <p className="text-yellow-400">
+              Predicted Price for{" "}
+              {trending.find((coin) => coin.item.id === selectedCoin)?.item.name ||
+                "Selected Coin"}
+              :
             </p>
-            <p className="text-2xl font-bold text-yellow-400">
-              Predicted Next Price: ${prediction.toFixed(2)}
-            </p>
-            <p className="text-sm text-gray-400 mt-2">
-              Prediction generated at: {predictionTimestamp}
-            </p>
-            <p className="text-sm text-yellow-500 mt-2">
-              Note: Predictions may remain stable if market trends have not changed significantly.
-            </p>
+            <p className="text-2xl font-bold">${prediction.toFixed(2)}</p>
           </div>
         )}
       </div>

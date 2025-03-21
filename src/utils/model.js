@@ -3,6 +3,12 @@ import * as tf from "@tensorflow/tfjs";
 // Train the TensorFlow.js model
 export const trainModel = async (data) => {
   console.log("Starting training process...");
+  
+  // Validate data
+  if (data.length <= 1) {
+    throw new Error("Insufficient data for training. At least two data points are required.");
+  }
+
   console.log("Received data for training:", data);
 
   const min = Math.min(...data);
@@ -33,15 +39,28 @@ export const trainModel = async (data) => {
   model.compile({ optimizer: "adam", loss: "meanSquaredError" });
 
   console.log("Training the model...");
-  await model.fit(xs, ys, { epochs: 50, batchSize: 32 });
+  await model.fit(xs, ys, { epochs: 50, batchSize: Math.min(32, Math.floor(data.length / 10)) });
   console.log("Model training completed successfully!");
+
+  // Dispose tensors to avoid memory leaks
+  xs.dispose();
+  ys.dispose();
 
   return { model, min, max };
 };
 
 // Predict the next price using the trained model
-export const predictNextPrice = (model, lastPrice, min, max) => {
+export const predictNextPrice = async (model, lastPrice, min, max) => {
   console.log("Predicting the next price...");
+
+  // Validate inputs
+  if (!model) {
+    throw new Error("Model is not available. Please train the model first.");
+  }
+  if (lastPrice === undefined || lastPrice === null) {
+    throw new Error("Last price is not defined. Prediction cannot proceed.");
+  }
+
   console.log("Last observed price:", lastPrice);
 
   // Normalize the last price
@@ -49,12 +68,15 @@ export const predictNextPrice = (model, lastPrice, min, max) => {
   console.log("Normalized last price:", normalized);
 
   // Create a tensor for prediction with the shape [1, timeSteps, inputFeatures]
-  const inputTensor = tf.tensor3d([[[normalized]]], [1, 1, 1]); // Correct 3D input tensor
+  const inputTensor = tf.tensor3d([[[normalized]]], [1, 1, 1]);
   console.log("Input Tensor for Prediction:", inputTensor);
 
   // Perform prediction
-  const prediction = model.predict(inputTensor);
-  const predictedValue = prediction.dataSync()[0] * (max - min) + min; // Denormalize the predicted value
+  const prediction = await model.predict(inputTensor).data(); // Async fetch of prediction
+  const predictedValue = prediction[0] * (max - min) + min; // Denormalize the predicted value
+
+  // Dispose tensors to avoid memory leaks
+  inputTensor.dispose();
 
   console.log("Predicted Next Price (denormalized):", predictedValue);
   return predictedValue;
