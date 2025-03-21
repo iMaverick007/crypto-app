@@ -8,6 +8,9 @@ const Hero = React.lazy(() => import("./components/Hero"));
 const Footer = React.lazy(() => import("./components/Footer"));
 const NewsFeed = React.lazy(() => import("./components/NewsFeed"));
 const Prediction = React.lazy(() => import("./components/Prediction"));
+const Tools = React.lazy(() => import("./components/Tools"));
+const About = React.lazy(() => import("./components/About"));
+const Contact = React.lazy(() => import("./components/Contact"));
 
 const App = () => {
   return (
@@ -23,6 +26,9 @@ const App = () => {
               <Route path="/" element={<Hero />} />
               <Route path="/news" element={<NewsFeed />} />
               <Route path="/prediction" element={<Prediction />} />
+              <Route path="/tools" element={<Tools />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </main>
 

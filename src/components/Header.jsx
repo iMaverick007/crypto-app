@@ -55,6 +55,16 @@ const Header = () => {
                 </Link>
               </li>
               <li className="cursor-pointer">
+                <Link to="/tools" className="hover:text-yellow-400 transition">
+                  Tools
+                </Link>
+              </li>
+              <li className="cursor-pointer">
+                <Link to="/about" className="hover:text-yellow-400 transition">
+                  About
+                </Link>
+              </li>
+              <li className="cursor-pointer">
                 <Link to="/contact" className="hover:text-yellow-400 transition">
                   Contact
                 </Link>
@@ -92,6 +102,24 @@ const Header = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Prediction
+                </Link>
+              </li>
+              <li className="cursor-pointer">
+                <Link
+                  to="/tools"
+                  className="block hover:text-yellow-400 transition"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Tools
+                </Link>
+              </li>
+              <li className="cursor-pointer">
+                <Link
+                  to="/about"
+                  className="block hover:text-yellow-400 transition"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  About
                 </Link>
               </li>
               <li className="cursor-pointer">
