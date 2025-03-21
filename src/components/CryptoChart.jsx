@@ -16,7 +16,7 @@ const CryptoChart = memo(({ coinId }) => {
 
   return (
     <div
-      className="rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black p-2 md:p-4 w-full"
+      className="rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black p-2 md:p-4 w-full cursor-default"
       style={{ height: "300px", minHeight: "300px", maxHeight: "400px" }}
     >
       <ResponsiveContainer>

@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTrendingCryptos } from "../features/cryptoSlice";
 import { fetchHistoricalData } from "../features/chartSlice";
+import CoinDetails from "./CoinDetails";
 import CryptoChart from "./CryptoChart";
 
 const Hero = () => {
   const dispatch = useDispatch();
   const { trending, status } = useSelector((state) => state.crypto);
-  const { status: chartStatus } = useSelector((state) => state.charts);
-  const [selectedCoin, setSelectedCoin] = useState("");
+  const [selectedCoin, setSelectedCoin] = useState(null); // Track selected coin for popup
   const [defaultCoin, setDefaultCoin] = useState("");
 
   // Fetch trending coins on mount
@@ -27,11 +27,8 @@ const Hero = () => {
     }
   }, [status, trending, defaultCoin, dispatch]);
 
-  // Handle dropdown selection
-  const handleCoinChange = (e) => {
-    const coinId = e.target.value;
-    setSelectedCoin(coinId);
-    dispatch(fetchHistoricalData(coinId));
+  const handleCardClick = (coin) => {
+    setSelectedCoin(coin); // Open CoinDetails popup
   };
 
   return (
@@ -44,11 +41,9 @@ const Hero = () => {
         {/* Loading State for Cards */}
         {status === "loading" && (
           <div className="flex justify-center items-center h-full">
-            <div className="text-xl md:text-4xl font-extrabold tracking-wide text-center">
-              <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
-                Loading trending cryptocurrencies...
-              </span>
-            </div>
+            <p className="text-xl md:text-4xl font-extrabold text-center text-yellow-400">
+              Loading trending cryptocurrencies...
+            </p>
           </div>
         )}
 
@@ -58,7 +53,8 @@ const Hero = () => {
             {trending.map((coin) => (
               <div
                 key={coin.item.id}
-                className="p-6 rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white hover:scale-105 transform transition-all duration-300"
+                onClick={() => handleCardClick(coin.item)}
+                className="p-6 rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white hover:scale-105 transform transition-all duration-300 cursor-pointer"
               >
                 <div className="flex items-center space-x-4 mb-4">
                   <img
@@ -78,7 +74,7 @@ const Hero = () => {
                     <span className="font-bold">Market Rank:</span> #{coin.item.market_cap_rank}
                   </p>
                   <p className="text-sm text-gray-400">
-                    Stay informed about {coin.item.name}'s performance.
+                    Click to view more about {coin.item.name}.
                   </p>
                 </div>
               </div>
@@ -86,12 +82,21 @@ const Hero = () => {
           </div>
         )}
 
+        {/* Modal for displaying coin details */}
+        {selectedCoin && (
+          <CoinDetails coinId={selectedCoin.id} onClose={() => setSelectedCoin(null)} />
+        )}
+
         {/* Dropdown for selecting a coin */}
         {status === "succeeded" && trending.length > 0 && (
           <div className="flex justify-center mb-6">
             <select
-              value={selectedCoin || defaultCoin}
-              onChange={handleCoinChange}
+              value={selectedCoin?.id || defaultCoin}
+              onChange={(e) => {
+                const coinId = e.target.value;
+                setSelectedCoin(null); // Close popup if open
+                dispatch(fetchHistoricalData(coinId));
+              }}
               className="bg-gray-800 text-white px-4 py-2 rounded-lg"
             >
               {trending.map((coin) => (
@@ -104,22 +109,8 @@ const Hero = () => {
         )}
 
         {/* Chart container with responsive padding */}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Loading Animation for Chart */}
-          {(selectedCoin || defaultCoin) && chartStatus === "loading" && (
-            <div className="flex justify-center items-center h-full">
-              <div className="text-4xl font-extrabold tracking-wide text-center">
-                <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
-                  Loading the chart data...
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Render Chart */}
-          {(selectedCoin || defaultCoin) && chartStatus === "succeeded" && (
-            <CryptoChart coinId={selectedCoin || defaultCoin} />
-          )}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 cursor-default">
+          {(defaultCoin || selectedCoin?.id) && <CryptoChart coinId={defaultCoin || selectedCoin?.id} />}
         </div>
       </div>
     </section>

@@ -120,7 +120,7 @@ const Prediction = () => {
                 setSelectedCoin(e.target.value); // Set the selected coin
                 resetStates(); // Clear stale data
               }}
-              className="bg-gray-800 text-white px-4 py-2 rounded-lg"
+              className="bg-gray-800 text-white px-4 py-2 rounded-lg cursor-pointer"
             >
               <option value="" disabled>
                 Select a cryptocurrency
@@ -142,7 +142,7 @@ const Prediction = () => {
             className={`px-6 py-3 rounded-lg font-semibold ${
               buttonStatus === "fetching" || buttonStatus === "training" || !selectedCoin
                 ? "bg-gray-500 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-400"
+                : "bg-blue-500 hover:bg-blue-400 cursor-pointer"
             }`}
           >
             {buttonText}
