@@ -13,6 +13,8 @@ A modern React application for tracking cryptocurrency trends, news, and price p
 - **News Feed**: Stay informed with the latest cryptocurrency news
 - **Price Prediction**: ML-powered price predictions using TensorFlow.js
 - **Responsive Design**: Full mobile responsiveness with Tailwind CSS
+- **Crypto Tools**: Access integrated tools like Currency Converter, Profit/Loss Calculator, and Tax Estimator
+- **Informative Pages**: Explore About and Contact pages for more details
 
 ## Technologies Used
 
