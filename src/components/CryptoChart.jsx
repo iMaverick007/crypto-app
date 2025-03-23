@@ -3,10 +3,32 @@ import { useSelector } from "react-redux";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Text } from "recharts";
 
 const CryptoChart = memo(({ coinId }) => {
-  const { historicalData } = useSelector((state) => state.charts);
+  const { historicalData, status } = useSelector((state) => state.charts);
 
-  if (!coinId || !historicalData[coinId]) {
-    return null;
+  if (!coinId) return null;
+
+  // Show loading message when fetching data
+  if (status === "loading" && !historicalData[coinId]) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="text-xl md:text-4xl font-extrabold tracking-wide text-center">
+          <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
+            Loading chart data...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // If no data is available after loading, display a message
+  if (!historicalData[coinId]) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <span className="text-xl font-extrabold tracking-wide text-yellow-400">
+          No data available.
+        </span>
+      </div>
+    );
   }
 
   const chartData = historicalData[coinId].map((data) => ({

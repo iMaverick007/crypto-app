@@ -8,8 +8,8 @@ import CryptoChart from "./CryptoChart";
 const Hero = () => {
   const dispatch = useDispatch();
   const { trending, status } = useSelector((state) => state.crypto);
-  const [selectedCoin, setSelectedCoin] = useState(null); // Track selected coin for popup
-  const [defaultCoin, setDefaultCoin] = useState("");
+  const [selectedCoin, setSelectedCoin] = useState(null); // For popup
+  const [chartCoin, setChartCoin] = useState(""); // For chart display
 
   // Fetch trending coins on mount
   useEffect(() => {
@@ -20,12 +20,12 @@ const Hero = () => {
 
   // Set a default coin for the chart
   useEffect(() => {
-    if (status === "succeeded" && trending.length > 0 && !defaultCoin) {
+    if (status === "succeeded" && trending.length > 0 && !chartCoin) {
       const randomCoin = trending[Math.floor(Math.random() * trending.length)];
-      setDefaultCoin(randomCoin.item.id);
+      setChartCoin(randomCoin.item.id);
       dispatch(fetchHistoricalData(randomCoin.item.id));
     }
-  }, [status, trending, defaultCoin, dispatch]);
+  }, [status, trending, chartCoin, dispatch]);
 
   const handleCardClick = (coin) => {
     setSelectedCoin(coin); // Open CoinDetails popup
@@ -91,10 +91,10 @@ const Hero = () => {
         {status === "succeeded" && trending.length > 0 && (
           <div className="flex justify-center mb-6">
             <select
-              value={selectedCoin?.id || defaultCoin}
+              value={chartCoin}
               onChange={(e) => {
                 const coinId = e.target.value;
-                setSelectedCoin(null); // Close popup if open
+                setChartCoin(coinId);
                 dispatch(fetchHistoricalData(coinId));
               }}
               className="bg-gray-800 text-white px-4 py-2 rounded-lg"
@@ -110,7 +110,7 @@ const Hero = () => {
 
         {/* Chart container with responsive padding */}
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 cursor-default">
-          {(defaultCoin || selectedCoin?.id) && <CryptoChart coinId={defaultCoin || selectedCoin?.id} />}
+          {chartCoin && <CryptoChart coinId={chartCoin} />}
         </div>
       </div>
     </section>
