@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   setAmount,
   setCrypto,
   setFiat,
   fetchConversionRate,
 } from "../features/currencyConverterSlice";
+import LoadingMessage from "./LoadingMessage"; // Import the reusable component
 
 const CurrencyConverter = () => {
   const dispatch = useDispatch();
@@ -54,16 +55,19 @@ const CurrencyConverter = () => {
             className="w-full p-2 rounded bg-gray-700 text-white"
           />
         </div>
-        <div className="text-yellow-400 font-bold">
-          {status === "loading"
-            ? "Calculating..."
-            : error
-            ? `Error: ${error}`
-            : `Converted Amount: ${
-                convertedAmount
-                  ? convertedAmount.toFixed(2) + " " + fiat.toUpperCase()
-                  : ""
-              }`}
+        <div>
+          {status === "loading" ? (
+            <LoadingMessage message="Calculating..." />
+          ) : error ? (
+            <p className="text-red-500">Error: {error}</p>
+          ) : (
+            <p className="text-yellow-400 font-bold">
+              Converted Amount:{" "}
+              {convertedAmount
+                ? `${convertedAmount.toFixed(2)} ${fiat.toUpperCase()}`
+                : ""}
+            </p>
+          )}
         </div>
       </div>
     </div>

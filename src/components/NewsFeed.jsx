@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchNews } from "../features/newsSlice";
+import LoadingMessage from "./LoadingMessage"; // Import the reusable component
 
 const NewsFeed = () => {
   const dispatch = useDispatch();
@@ -24,21 +25,14 @@ const NewsFeed = () => {
           Explore <span className="text-yellow-400">Crypto News</span>
         </h1>
 
-        {/* Loading state */}
-        {status === "loading" && (
-          <div className="flex justify-center items-center py-8">
-            <div className="text-xl md:text-4xl font-extrabold tracking-wide text-center">
-              <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
-                Loading cryptocurrency news...
-              </span>
-            </div>
-          </div>
-        )}
+        {status === "loading" && <LoadingMessage message="Loading cryptocurrency news..." />}
+
         {status === "failed" && (
           <div className="text-center">
             <p className="text-red-500 font-semibold">Error: {error}</p>
           </div>
         )}
+
         {status === "succeeded" && articles.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {articles

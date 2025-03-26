@@ -1,18 +1,24 @@
 import * as tf from "@tensorflow/tfjs";
 
 // Train the TensorFlow.js model
-export const trainModel = async (data) => {
+export const trainModel = async (data, timeSteps = 5, futureSteps = 5) => {
   console.log("Starting training process...");
-  
+
   // Validate data
-  if (data.length <= 1) {
-    throw new Error("Insufficient data for training. At least two data points are required.");
+  if (data.length <= timeSteps + futureSteps) {
+    throw new Error(
+      "Insufficient data for training. At least timeSteps + futureSteps data points are required."
+    );
   }
 
   console.log("Received data for training:", data);
 
   const min = Math.min(...data);
   const max = Math.max(...data);
+  if (isNaN(min) || isNaN(max) || max === min) {
+    throw new Error("Normalization failed: min and max values are invalid.");
+  }
+
   console.log("Normalization values - Min:", min, "Max:", max);
 
   const normalizedData = data.map((price) => (price - min) / (max - min));
@@ -20,64 +26,63 @@ export const trainModel = async (data) => {
 
   const inputData = [];
   const labels = [];
-  const timeSteps = 1; // Number of time steps for LSTM
 
-  for (let i = 0; i < normalizedData.length - timeSteps; i++) {
+  for (let i = 0; i < normalizedData.length - timeSteps - futureSteps + 1; i++) {
     inputData.push(normalizedData.slice(i, i + timeSteps).map((val) => [val]));
-    labels.push(normalizedData[i + timeSteps]);
+    labels.push(normalizedData.slice(i + timeSteps, i + timeSteps + futureSteps));
   }
 
   console.log("Prepared Input Data (formatted for tensor3d):", inputData);
   console.log("Prepared Labels:", labels);
 
   const xs = tf.tensor3d(inputData, [inputData.length, timeSteps, 1]);
-  const ys = tf.tensor2d(labels, [labels.length, 1]);
+  const ys = tf.tensor2d(labels, [labels.length, futureSteps]);
 
   const model = tf.sequential();
-  model.add(tf.layers.lstm({ units: 50, inputShape: [timeSteps, 1], returnSequences: false }));
-  model.add(tf.layers.dense({ units: 1 }));
+  model.add(tf.layers.lstm({ units: 50, inputShape: [timeSteps, 1] }));
+  model.add(tf.layers.dense({ units: futureSteps }));
   model.compile({ optimizer: "adam", loss: "meanSquaredError" });
 
   console.log("Training the model...");
   await model.fit(xs, ys, { epochs: 50, batchSize: Math.min(32, Math.floor(data.length / 10)) });
   console.log("Model training completed successfully!");
 
-  // Dispose tensors to avoid memory leaks
   xs.dispose();
   ys.dispose();
 
   return { model, min, max };
 };
 
-// Predict the next price using the trained model
-export const predictNextPrice = async (model, lastPrice, min, max) => {
-  console.log("Predicting the next price...");
+// Predict the next prices using the trained model
+export const predictNextPrices = async (model, lastPrices, min, max) => {
+  console.log("Predicting the next prices...");
 
-  // Validate inputs
-  if (!model) {
-    throw new Error("Model is not available. Please train the model first.");
-  }
-  if (lastPrice === undefined || lastPrice === null) {
-    throw new Error("Last price is not defined. Prediction cannot proceed.");
+  if (!Array.isArray(lastPrices) || lastPrices.length !== 5 || lastPrices.some((price) => isNaN(price))) {
+    throw new Error("Invalid lastPrices array detected.");
   }
 
-  console.log("Last observed price:", lastPrice);
+  if (isNaN(min) || isNaN(max) || max === min) {
+    throw new Error("Normalization failed: min and max values are invalid.");
+  }
 
-  // Normalize the last price
-  const normalized = (lastPrice - min) / (max - min);
-  console.log("Normalized last price:", normalized);
+  const normalized = lastPrices.map((price) => (price - min) / (max - min));
+  if (normalized.some((val) => isNaN(val))) {
+    throw new Error("Normalization failed for lastPrices.");
+  }
 
-  // Create a tensor for prediction with the shape [1, timeSteps, inputFeatures]
-  const inputTensor = tf.tensor3d([[[normalized]]], [1, 1, 1]);
-  console.log("Input Tensor for Prediction:", inputTensor);
+  console.log("Normalized last prices:", normalized);
 
-  // Perform prediction
-  const prediction = await model.predict(inputTensor).data(); // Async fetch of prediction
-  const predictedValue = prediction[0] * (max - min) + min; // Denormalize the predicted value
+  const inputTensor = tf.tensor3d([normalized.map((val) => [val])], [1, lastPrices.length, 1]);
 
-  // Dispose tensors to avoid memory leaks
+  const predictionTensor = model.predict(inputTensor);
+  const predictionArray = await predictionTensor.array();
+  console.log("Prediction Array:", predictionArray);
+
+  const denormalizedPrediction = predictionArray[0].map((value) => value * (max - min) + min);
+  console.log("Denormalized Predictions:", denormalizedPrediction);
+
   inputTensor.dispose();
+  predictionTensor.dispose();
 
-  console.log("Predicted Next Price (denormalized):", predictedValue);
-  return predictedValue;
+  return denormalizedPrediction;
 };

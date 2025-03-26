@@ -10,7 +10,7 @@ const Header = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-extrabold">
             <Link to="/" className="hover:text-yellow-400 transition cursor-pointer">
-              CryptoTracker
+              CryptoApp
             </Link>
           </h1>
 

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCoinDetails } from "../features/coinDetailsSlice";
+import LoadingMessage from "./LoadingMessage"; // Import the reusable component
 
 const CoinDetails = ({ coinId, onClose }) => {
   const dispatch = useDispatch();
@@ -12,20 +13,10 @@ const CoinDetails = ({ coinId, onClose }) => {
     }
   }, [coinId, dispatch]);
 
-  // Animated Loading State
   if (status === "loading") {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50">
-        <div className="text-xl md:text-4xl font-extrabold tracking-wide text-center text-yellow-400">
-          <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
-            Loading coin details...
-          </span>
-        </div>
-      </div>
-    );
+    return <LoadingMessage message="Loading coin details..." />;
   }
 
-  // Error State
   if (status === "failed") {
     return (
       <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50">
@@ -34,7 +25,6 @@ const CoinDetails = ({ coinId, onClose }) => {
     );
   }
 
-  // Render Popup
   if (!coinDetails) {
     return null;
   }
@@ -42,14 +32,12 @@ const CoinDetails = ({ coinId, onClose }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50">
       <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white rounded-lg shadow-lg p-6 w-full md:w-1/2 lg:w-1/3 relative transition-transform transform scale-95 hover:scale-100">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-yellow-400 hover:text-yellow-300 text-2xl font-bold cursor-pointer"
         >
           &times;
         </button>
-        {/* Coin Details */}
         <h2 className="text-2xl font-bold mb-4">{coinDetails.name}</h2>
         <p className="text-sm text-yellow-400 uppercase">{coinDetails.symbol}</p>
         <p className="mt-2 text-lg">

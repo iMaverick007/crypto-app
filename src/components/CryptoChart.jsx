@@ -1,73 +1,59 @@
-import React, { memo } from "react";
-import { useSelector } from "react-redux";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Text } from "recharts";
+import React from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
-const CryptoChart = memo(({ coinId }) => {
-  const { historicalData, status } = useSelector((state) => state.charts);
+const CryptoChart = ({ data, chartTitle, colors = {}, displayType }) => {
+  const { primaryColor = "#8884d8", secondaryColor = "#FF0000", gridColor = "rgba(255, 255, 255, 0.2)" } = colors;
 
-  if (!coinId) return null;
-
-  // Show loading message when fetching data
-  if (status === "loading" && !historicalData[coinId]) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="text-xl md:text-4xl font-extrabold tracking-wide text-center">
-          <span className="animate-typewriter border-r-4 border-yellow-400 pr-2">
-            Loading chart data...
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  // If no data is available after loading, display a message
-  if (!historicalData[coinId]) {
+  // Handle the case where no data is available
+  if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <span className="text-xl font-extrabold tracking-wide text-yellow-400">
-          No data available.
-        </span>
+        <span className="text-xl font-bold text-yellow-400">No data available.</span>
       </div>
     );
   }
 
-  const chartData = historicalData[coinId].map((data) => ({
-    date: new Date(data.date).toLocaleDateString(),
-    value: data.value,
-  }));
+  // Filter data based on display type
+  const filteredData =
+    displayType === "prediction"
+      ? data.map((item, index) => ({
+          date: `Day ${index + 1}`, // Label prediction days only
+          value: item.value,
+        }))
+      : data.map((item) => ({
+          date: new Date(item.date).toLocaleDateString(), // Show actual historical dates
+          value: item.value,
+        }));
 
   return (
-    <div
-      className="rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black p-2 md:p-4 w-full cursor-default"
-      style={{ height: "300px", minHeight: "300px", maxHeight: "400px" }}
-    >
-      <ResponsiveContainer>
-        <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          {/* Gridlines */}
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.2)" />
-          
-          {/* Axes */}
+    <div className="rounded-lg shadow-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black p-4">
+      {chartTitle && <h3 className="text-yellow-400 font-bold mb-4 text-center">{chartTitle}</h3>}
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={filteredData}>
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
           <XAxis
             dataKey="date"
             tick={{ fill: "#FACC15", fontSize: "0.75rem" }}
-            label={{
-              value: "Date",
-              position: "bottom",
-              offset: 0,
-              style: { fill: "#FACC15", fontSize: "0.75rem" },
-            }}
+            label={{ value: displayType === "prediction" ? "Prediction Days" : "Date", position: "bottom", fill: "#FACC15" }}
           />
           <YAxis
             tick={{ fill: "#FACC15", fontSize: "0.75rem" }}
             label={{
-              value: "USD",
+              value: "Price (USD)",
               angle: -90,
               position: "insideLeft",
-              style: { fill: "#FACC15", fontSize: "0.75rem" },
+              fill: "#FACC15",
             }}
           />
-          
-          {/* Tooltip */}
           <Tooltip
             contentStyle={{
               backgroundColor: "rgba(0, 0, 0, 0.8)",
@@ -76,24 +62,22 @@ const CryptoChart = memo(({ coinId }) => {
             }}
             labelStyle={{ color: "#FACC15" }}
             itemStyle={{ color: "#FFFFFF" }}
+            formatter={(value) => `$${value.toFixed(2)}`}
           />
-          
-          {/* Legend */}
           <Legend wrapperStyle={{ color: "#FFFFFF" }} />
-          
-          {/* Line */}
           <Line
             type="monotone"
             dataKey="value"
-            stroke="#8884d8"
-            strokeWidth={3}
-            dot={{ r: 4, fill: "#FACC15" }}
-            activeDot={{ r: 8 }}
+            stroke={displayType === "prediction" ? secondaryColor : primaryColor} // Color depends on display type
+            strokeDasharray={displayType === "prediction" ? "5 5" : "none"} // Dashed line for predictions
+            strokeWidth={2}
+            dot={{ fill: displayType === "prediction" ? secondaryColor : primaryColor }}
+            name={displayType === "prediction" ? "Predicted Prices" : "Historical Prices"}
           />
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
-});
+};
 
 export default CryptoChart;

@@ -4,7 +4,7 @@ import LoadingScreen from "./components/LoadingScreen"; // Import the new Loadin
 
 // Lazy load components
 const Header = React.lazy(() => import("./components/Header"));
-const Hero = React.lazy(() => import("./components/Hero"));
+const Home = React.lazy(() => import("./components/Home"));
 const Footer = React.lazy(() => import("./components/Footer"));
 const NewsFeed = React.lazy(() => import("./components/NewsFeed"));
 const Prediction = React.lazy(() => import("./components/Prediction"));
@@ -23,7 +23,7 @@ const App = () => {
           {/* Main Content */}
           <main className="flex-grow">
             <Routes>
-              <Route path="/" element={<Hero />} />
+              <Route path="/" element={<Home />} />
               <Route path="/news" element={<NewsFeed />} />
               <Route path="/prediction" element={<Prediction />} />
               <Route path="/tools" element={<Tools />} />

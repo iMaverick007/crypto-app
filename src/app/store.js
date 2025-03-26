@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import cryptoReducer from "../features/cryptoSlice"; // For Hero Section
+import cryptoReducer from "../features/cryptoSlice"; // For Home Section
 import newsReducer from "../features/newsSlice"; // For News Feed
 import predictionReducer from "../features/predictionSlice"; // For Price Prediction
 import chartReducer from "../features/chartSlice"; // Handles historical chart data

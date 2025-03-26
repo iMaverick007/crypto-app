@@ -12,7 +12,7 @@ export const fetchHistoricalData = createAsyncThunk(
     }
     const data = await response.json();
 
-    // Transform the API response to return a cleaned array of prices with timestamps
+    // Transform API response to cleaned array
     return data.prices.map((price) => ({
       date: price[0], // Timestamp
       value: price[1], // Price

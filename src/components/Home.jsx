@@ -4,21 +4,21 @@ import { fetchTrendingCryptos } from "../features/cryptoSlice";
 import { fetchHistoricalData } from "../features/chartSlice";
 import CoinDetails from "./CoinDetails";
 import CryptoChart from "./CryptoChart";
+import LoadingMessage from "./LoadingMessage"; // Import the reusable component
 
-const Hero = () => {
+const Home = () => {
   const dispatch = useDispatch();
   const { trending, status } = useSelector((state) => state.crypto);
-  const [selectedCoin, setSelectedCoin] = useState(null); // For popup
-  const [chartCoin, setChartCoin] = useState(""); // For chart display
+  const { historicalData } = useSelector((state) => state.charts);
+  const [selectedCoin, setSelectedCoin] = useState(null);
+  const [chartCoin, setChartCoin] = useState("");
 
-  // Fetch trending coins on mount
   useEffect(() => {
     if (status === "idle") {
       dispatch(fetchTrendingCryptos());
     }
   }, [dispatch, status]);
 
-  // Set a default coin for the chart
   useEffect(() => {
     if (status === "succeeded" && trending.length > 0 && !chartCoin) {
       const randomCoin = trending[Math.floor(Math.random() * trending.length)];
@@ -28,7 +28,7 @@ const Hero = () => {
   }, [status, trending, chartCoin, dispatch]);
 
   const handleCardClick = (coin) => {
-    setSelectedCoin(coin); // Open CoinDetails popup
+    setSelectedCoin(coin);
   };
 
   return (
@@ -38,16 +38,10 @@ const Hero = () => {
           Explore <span className="text-yellow-400">Crypto Trends</span>
         </h1>
 
-        {/* Loading State for Cards */}
         {status === "loading" && (
-          <div className="flex justify-center items-center h-full">
-            <p className="text-xl md:text-4xl font-extrabold text-center text-yellow-400">
-              Loading trending cryptocurrencies...
-            </p>
-          </div>
+          <LoadingMessage message="Loading trending cryptocurrencies..." />
         )}
 
-        {/* Render Cards */}
         {status === "succeeded" && trending.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
             {trending.map((coin) => (
@@ -71,7 +65,8 @@ const Hero = () => {
                 </div>
                 <div className="space-y-2">
                   <p>
-                    <span className="font-bold">Market Rank:</span> #{coin.item.market_cap_rank}
+                    <span className="font-bold">Market Rank:</span> #
+                    {coin.item.market_cap_rank}
                   </p>
                   <p className="text-sm text-gray-400">
                     Click to view more about {coin.item.name}.
@@ -82,12 +77,13 @@ const Hero = () => {
           </div>
         )}
 
-        {/* Modal for displaying coin details */}
         {selectedCoin && (
-          <CoinDetails coinId={selectedCoin.id} onClose={() => setSelectedCoin(null)} />
+          <CoinDetails
+            coinId={selectedCoin.id}
+            onClose={() => setSelectedCoin(null)}
+          />
         )}
 
-        {/* Dropdown for selecting a coin */}
         {status === "succeeded" && trending.length > 0 && (
           <div className="flex justify-center mb-6">
             <select
@@ -108,13 +104,21 @@ const Hero = () => {
           </div>
         )}
 
-        {/* Chart container with responsive padding */}
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 cursor-default">
-          {chartCoin && <CryptoChart coinId={chartCoin} />}
+          {chartCoin && historicalData[chartCoin] && (
+            <CryptoChart
+              data={historicalData[chartCoin]} // Pass the historical data explicitly
+              chartTitle="Cryptocurrency Historical Prices"
+              colors={{
+                primaryColor: "#8884d8",
+              }}
+              displayType="historical"
+            />
+          )}
         </div>
       </div>
     </section>
   );
 };
 
-export default Hero;
+export default Home;
