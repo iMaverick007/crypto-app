@@ -8,24 +8,24 @@ import LoadingMessage from "./LoadingMessage"; // Import the reusable component
 
 const Home = () => {
   const dispatch = useDispatch();
-  const { trending, status } = useSelector((state) => state.crypto);
-  const { historicalData } = useSelector((state) => state.charts);
+  const { trending, status: cryptoStatus } = useSelector((state) => state.crypto);
+  const { historicalData, status: chartStatus } = useSelector((state) => state.charts);
   const [selectedCoin, setSelectedCoin] = useState(null);
   const [chartCoin, setChartCoin] = useState("");
 
   useEffect(() => {
-    if (status === "idle") {
+    if (cryptoStatus === "idle") {
       dispatch(fetchTrendingCryptos());
     }
-  }, [dispatch, status]);
+  }, [dispatch, cryptoStatus]);
 
   useEffect(() => {
-    if (status === "succeeded" && trending.length > 0 && !chartCoin) {
+    if (cryptoStatus === "succeeded" && trending.length > 0 && !chartCoin) {
       const randomCoin = trending[Math.floor(Math.random() * trending.length)];
       setChartCoin(randomCoin.item.id);
       dispatch(fetchHistoricalData(randomCoin.item.id));
     }
-  }, [status, trending, chartCoin, dispatch]);
+  }, [cryptoStatus, trending, chartCoin, dispatch]);
 
   const handleCardClick = (coin) => {
     setSelectedCoin(coin);
@@ -38,11 +38,11 @@ const Home = () => {
           Explore <span className="text-yellow-400">Crypto Trends</span>
         </h1>
 
-        {status === "loading" && (
+        {cryptoStatus === "loading" && (
           <LoadingMessage message="Loading trending cryptocurrencies..." />
         )}
 
-        {status === "succeeded" && trending.length > 0 && (
+        {cryptoStatus === "succeeded" && trending.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
             {trending.map((coin) => (
               <div
@@ -78,13 +78,16 @@ const Home = () => {
         )}
 
         {selectedCoin && (
-          <CoinDetails
-            coinId={selectedCoin.id}
-            onClose={() => setSelectedCoin(null)}
-          />
+          <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50">
+            {cryptoStatus === "loading" ? (
+              <LoadingMessage message="Loading coin details..." />
+            ) : (
+              <CoinDetails coinId={selectedCoin.id} onClose={() => setSelectedCoin(null)} />
+            )}
+          </div>
         )}
 
-        {status === "succeeded" && trending.length > 0 && (
+        {cryptoStatus === "succeeded" && trending.length > 0 && (
           <div className="flex justify-center mb-6">
             <select
               value={chartCoin}
@@ -105,15 +108,20 @@ const Home = () => {
         )}
 
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 cursor-default">
-          {chartCoin && historicalData[chartCoin] && (
-            <CryptoChart
-              data={historicalData[chartCoin]} // Pass the historical data explicitly
-              chartTitle="Cryptocurrency Historical Prices"
-              colors={{
-                primaryColor: "#8884d8",
-              }}
-              displayType="historical"
-            />
+          {chartStatus === "loading" ? (
+            <LoadingMessage message="Loading chart data..." />
+          ) : (
+            chartCoin &&
+            historicalData[chartCoin] && (
+              <CryptoChart
+                data={historicalData[chartCoin]} // Pass the historical data explicitly
+                chartTitle="Cryptocurrency Historical Prices"
+                colors={{
+                  primaryColor: "#8884d8",
+                }}
+                displayType="historical"
+              />
+            )
           )}
         </div>
       </div>

@@ -1,7 +1,3 @@
-# CryptoTracker
-
-> ⚠️ **Development Status**: This application is currently in development mode and may not be fully functional. Some features might be incomplete or subject to change.
-
 # CryptoTracker Application
 
 A modern React application for tracking cryptocurrency trends, news, and price predictions using machine learning.
